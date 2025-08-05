@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: doctor-mongo-service
+  labels:
+    app: doctor-mongo
+spec:
+  type: ClusterIP
+  selector:
+    app: doctor-mongo
+  ports:
+    - port: 27017
+      targetPort: 27017
+

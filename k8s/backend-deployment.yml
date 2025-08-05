@@ -1,0 +1,36 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: doctor-backend
+  labels:
+    app: doctor-backend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: doctor-backend
+  template:
+    metadata:
+      labels:
+        app: doctor-backend
+    spec:
+      containers:
+        - name: doctor-backend
+          image: myacromar.azurecr.io/doctor-backend:v1
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 5000
+          env:
+            - name: GOOGLE_CLIENT_ID
+              valueFrom:
+                secretKeyRef:
+                  name: doctor-secrets
+                  key: google-client-id
+            - name: GOOGLE_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: doctor-secrets
+                  key: google-client-secret
+            - name: MONGO_URI
+              value: "mongodb://doctor-mongo-service:27017/framework"
+

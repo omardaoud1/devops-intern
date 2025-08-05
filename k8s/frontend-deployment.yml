@@ -1,0 +1,22 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: doctor-frontend
+  labels:
+    app: doctor-frontend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: doctor-frontend
+  template:
+    metadata:
+      labels:
+        app: doctor-frontend
+    spec:
+      containers:
+        - name: doctor-frontend
+          image: myacromar.azurecr.io/doctor-frontend:v1
+          ports:
+            - containerPort: 80
+

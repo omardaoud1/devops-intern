@@ -44,9 +44,9 @@ jobs:
       - name: Log in to Azure Container Registry
         run: az acr login --name ${{ secrets.AZURE_REGISTRY_NAME }}
 
-      - name: Tag Docker image with ACR login server
-        run: docker tag doctor-frontend:latest ${{ secrets.AZURE_REGISTRY_LOGIN_SERVER }}/doctor-frontend:latest
 
       - name: Push Docker image to ACR
-        run: docker push ${{ secrets.AZURE_REGISTRY_LOGIN_SERVER }}/doctor-frontend:latest
+        run: |
+          docker tag doctor-frontend:latest ${{ secrets.AZURE_REGISTRY_LOGIN_SERVER }}/doctor-frontend:latest
+          docker push ${{ secrets.AZURE_REGISTRY_LOGIN_SERVER }}/doctor-frontend:latest
 

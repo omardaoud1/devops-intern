@@ -9,6 +9,7 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "predeploy": "npm run build",
+    "test": "react-scripts test --watchAll=false",
     "deploy": "gh-pages -d dist"
   },
   "dependencies": {

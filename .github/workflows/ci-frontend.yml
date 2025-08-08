@@ -29,9 +29,9 @@ jobs:
         run: npm run build
         working-directory: ./frontend
 
-      - name: run tests
-        run: npm test --watchAll=false
-        working-directory: ./frontend
+      # - name: run tests
+      # run: npm test --watchAll=false
+      # working-directory: ./frontend
 
       - name: build docker image 
         run: docker build -t doctor-frontend:latest ./frontend

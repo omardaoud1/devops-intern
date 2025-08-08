@@ -22,7 +22,7 @@ jobs:
           node-version: '18'
 
       - name: install dependencies
-        run: npm install
+        run: npm install --legacy-peer-deps
         working-directory: ./frontend
 
       - name: build react app 

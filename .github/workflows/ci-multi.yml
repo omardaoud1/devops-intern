@@ -54,10 +54,18 @@ jobs:
         with:
           version: 'latest'
 
+      - name: Deploy MongoDB
+        run: |
+          kubectl apply -f ./k8s/mongo-deployment.yml
+          kubectl apply -f ./k8s/mongo-service.yml
+
       - name: Deploy backend to Kubernetes
         run: |
           kubectl apply -f ./k8s/backend-deployment.yml
           kubectl apply -f ./k8s/backend-service.yml
+
+      - name: deploy ingress
+        run: kubectl apply -f ./k8s/ingress.yml
 
 
   build-frontend:
@@ -112,6 +120,7 @@ jobs:
         uses: azure/setup-kubectl@v3
         with:
           version: 'latest'
+
 
       - name: Deploy frontend to Kubernetes
         run: |

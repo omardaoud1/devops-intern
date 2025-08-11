@@ -42,6 +42,23 @@ jobs:
           docker tag doctor-backend:latest ${{ secrets.AZURE_REGISTRY_LOGIN_SERVER }}/doctor-backend:latest
           docker push ${{ secrets.AZURE_REGISTRY_LOGIN_SERVER }}/doctor-backend:latest
 
+      - name: Set AKS context
+        uses: azure/aks-set-context@v2
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+          resource-group: ${{ secrets.AKS_RESOURCE_GROUP }}
+          cluster-name: ${{ secrets.AKS_CLUSTER_NAME }}
+
+      - name: Set up kubectl
+        uses: azure/setup-kubectl@v3
+        with:
+          version: 'latest'
+
+      - name: Deploy backend to Kubernetes
+        run: |
+          kubectl apply -f ./k8s/backend-deployment.yml
+          kubectl apply -f ./k8s/backend-service.yml
+
 
   build-frontend:
     runs-on: ubuntu-latest
@@ -82,4 +99,22 @@ jobs:
         run: |
           docker tag doctor-frontend:latest ${{ secrets.AZURE_REGISTRY_LOGIN_SERVER }}/doctor-frontend:latest
           docker push ${{ secrets.AZURE_REGISTRY_LOGIN_SERVER }}/doctor-frontend:latest
+
+      - name: Set AKS context
+        uses: azure/aks-set-context@v2
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+          resource-group: ${{ secrets.AKS_RESOURCE_GROUP }}
+          cluster-name: ${{ secrets.AKS_CLUSTER_NAME }}
+
+
+      - name: Set up kubectl
+        uses: azure/setup-kubectl@v3
+        with:
+          version: 'latest'
+
+      - name: Deploy frontend to Kubernetes
+        run: |
+          kubectl apply -f ./k8s/frontend-deployment.yml
+          kubectl apply -f ./k8s/frontend-service.yml
 

@@ -1,0 +1,85 @@
+name: ci-multiservice
+
+on:
+  push:
+    branches: [main]
+
+  pull_request:
+    branches: [main]
+
+jobs:
+  build-backend:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+
+      - name: Install dependencies
+        run: npm install
+        working-directory: ./backend
+
+      - name: Run tests
+        run: npm test
+        working-directory: ./backend
+
+      - name: Build Docker image
+        run: docker build -t doctor-backend:latest ./backend
+
+      - name: Log in to Azure
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+      - name: Log in to Azure Container Registry
+        run: az acr login --name ${{ secrets.AZURE_REGISTRY_NAME }}
+
+      - name: Push Docker image to ACR
+        run: |
+          docker tag doctor-backend:latest ${{ secrets.AZURE_REGISTRY_LOGIN_SERVER }}/doctor-backend:latest
+          docker push ${{ secrets.AZURE_REGISTRY_LOGIN_SERVER }}/doctor-backend:latest
+
+
+  build-frontend:
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout code
+        uses: actions/checkout@v3
+
+      - name: setup node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+
+      - name: install dependencies
+        run: npm install --legacy-peer-deps
+        working-directory: ./frontend
+
+      - name: build react app 
+        run: npm run build
+        working-directory: ./frontend
+
+      # - name: run tests
+      # run: npm test --watchAll=false
+      # working-directory: ./frontend
+
+      - name: build docker image 
+        run: docker build -t doctor-frontend:latest ./frontend
+
+      - name: login to azure
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Log in to Azure Container Registry
+        run: az acr login --name ${{ secrets.AZURE_REGISTRY_NAME }}
+
+
+      - name: Push Docker image to ACR
+        run: |
+          docker tag doctor-frontend:latest ${{ secrets.AZURE_REGISTRY_LOGIN_SERVER }}/doctor-frontend:latest
+          docker push ${{ secrets.AZURE_REGISTRY_LOGIN_SERVER }}/doctor-frontend:latest
+

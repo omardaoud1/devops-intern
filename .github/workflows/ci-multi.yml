@@ -131,9 +131,8 @@ jobs:
       - name: Set AKS context
         uses: azure/aks-set-context@v2
         with:
-          creds: ${{ secrets.AZURE_CREDENTIALS }}
-          resource-group: ${{ secrets.AKS_RESOURCE_GROUP }}
-          cluster-name: ${{ secrets.AKS_CLUSTER_NAME }}
+          resource-group: myNEWRG
+          cluster-name: myaksomar
 
 
       - name: Set up kubectl

@@ -30,6 +30,16 @@ jobs:
       - name: Build Docker image
         run: docker build -t doctor-backend:latest ./backend
 
+      - name: Scan backend Docker image with Trivy
+        uses: aquasecurity/trivy-action@0.20.0
+        with:
+          image-ref: myregistry.azurecr.io/doctor-backend:latest
+          format: table
+          exit-code: 1
+          ignore-unfixed: true
+          vuln-type: 'os,library'
+          severity: 'CRITICAL,HIGH'
+
       - name: Log in to Azure
         uses: azure/login@v1
         with:
@@ -93,6 +103,14 @@ jobs:
 
       - name: build docker image 
         run: docker build -t doctor-frontend:latest ./frontend
+
+      - name: Run Trivy vulnerability scanner on frontend
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: 'doctor-frontend:latest'
+          format: 'table'
+          exit-code: '1'
+          severity: 'CRITICAL,HIGH'
 
       - name: login to azure
         uses: azure/login@v1

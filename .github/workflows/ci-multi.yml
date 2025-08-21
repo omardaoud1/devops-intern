@@ -24,7 +24,7 @@ jobs:
         working-directory: ./backend
 
       - name: Run Snyk to check for vulnerabilities
-        uses: snyk/actions/node@master
+        run: snyk test
         working-directory: ./backend
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}

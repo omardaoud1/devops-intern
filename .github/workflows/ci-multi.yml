@@ -23,6 +23,11 @@ jobs:
         run: npm install
         working-directory: ./backend
 
+      - name: Run Snyk to check for vulnerabilities
+        uses: snyk/actions/node@master
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+
       - name: Run tests
         run: npm test
         working-directory: ./backend
@@ -55,7 +60,7 @@ jobs:
       - name: Set AKS context
         uses: azure/aks-set-context@v2
         with:
-          subscription: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
           resource-group: ${{ secrets.AKS_RESOURCE_GROUP }}
           cluster-name: ${{ secrets.AKS_CLUSTER_NAME }}
           admin: true
@@ -132,7 +137,7 @@ jobs:
       - name: Set AKS context
         uses: azure/aks-set-context@v2
         with:
-          subscription: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
           resource-group: ${{ secrets.AKS_RESOURCE_GROUP }}
           cluster-name: ${{ secrets.AKS_CLUSTER_NAME }}
           admin: true

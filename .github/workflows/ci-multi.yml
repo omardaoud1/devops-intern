@@ -1,11 +1,10 @@
 name: ci-multiservice
 
 on:
-  push:
-    branches: [main]
-
-  pull_request:
-    branches: [main]
+  workflow_run:
+    workflows: ["terraform"]  # must match the `name:` in terraform.yml
+    types:
+      - completed
 
 jobs:
   build-backend:

@@ -51,4 +51,4 @@ jobs:
           gh secret set AKS_RESOURCE_GROUP --body "$(terraform output -raw resource_group_name)"
           gh secret set VNET_NAME --body "$(terraform output -raw vnet_name)"
           gh secret set SUBNET_NAME --body "$(terraform output -raw subnet_name)"
-#small comment 
+#small comment here for test 

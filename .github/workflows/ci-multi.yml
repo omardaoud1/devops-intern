@@ -63,13 +63,22 @@ jobs:
         uses: azure/login@v1
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
+
       - name: Log in to Azure Container Registry
-        run: az acr login --name ${{ secrets.AZURE_REGISTRY_NAME }}
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+          enable-AzPSSession: true
+
+      - name: Log in to ACR with Azure CLI
+        run: |
+          az acr login --name ${{ secrets.AZURE_REGISTRY_NAME }} --expose-token
+
 
       - name: Push Docker image to ACR
         run: |
-          docker tag doctor-backend:latest ${{ secrets.AZURE_REGISTRY_LOGIN_SERVER }}/doctor-backend:latest
-          docker push ${{ secrets.AZURE_REGISTRY_LOGIN_SERVER }}/doctor-backend:latest
+          docker tag doctor-backend:latest ${{ secrets.AZURE_REGISTRY_NAME }}.azurecr.io/doctor-backend:latest
+          docker push ${{ secrets.AZURE_REGISTRY_NAME }}.azurecr.io/doctor-backend:latest
 
       - name: Set AKS context
         uses: azure/aks-set-context@v2
@@ -139,14 +148,22 @@ jobs:
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
 
+
       - name: Log in to Azure Container Registry
-        run: az acr login --name ${{ secrets.AZURE_REGISTRY_NAME }}
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+          enable-AzPSSession: true
+
+      - name: Log in to ACR with Azure CLI
+        run: |
+          az acr login --name ${{ secrets.AZURE_REGISTRY_NAME }} --expose-token
 
 
       - name: Push Docker image to ACR
         run: |
-          docker tag doctor-frontend:latest ${{ secrets.AZURE_REGISTRY_LOGIN_SERVER }}/doctor-frontend:latest
-          docker push ${{ secrets.AZURE_REGISTRY_LOGIN_SERVER }}/doctor-frontend:latest
+          docker tag doctor-frontend:latest ${{ secrets.AZURE_REGISTRY_NAME }}.azurecr.io/doctor-frontend:latest
+          docker push ${{ secrets.AZURE_REGISTRY_NAME }}.azurecr.io/doctor-frontend:latest
 
       - name: Set AKS context
         uses: azure/aks-set-context@v2

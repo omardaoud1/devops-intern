@@ -37,6 +37,13 @@ resource "azurerm_subnet" "doctor_subnet" {
   address_prefixes     = var.subnet_cidr
 }
 
+
+# Grant GitHub Actions access to ACR
+resource "azurerm_role_assignment" "github_acr_push" {
+  scope                = azurerm_container_registry.doctor_acr.id
+  role_definition_name = "AcrPush"
+  principal_id         = "YOUR_PRINCIPAL_ID_HERE" # This needs to be your GitHub OIDC identity
+}
 # 4️⃣ Azure Container Registry (ACR)
 resource "azurerm_container_registry" "doctor_acr" {
   name                = "${var.acr_name_prefix}${random_integer.suffix.result}"

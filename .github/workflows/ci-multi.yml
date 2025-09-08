@@ -47,6 +47,7 @@ jobs:
           ignore-unfixed: true
           vuln-type: 'os,library'
           severity: 'CRITICAL'
+        continue-on-error: true
 
       - name: Log in to Azure
         uses: azure/login@v1

@@ -30,6 +30,27 @@ jobs:
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
 
+      - name: Delete broken AKS cluster if managed RG is missing
+        run: |
+          # Check if managed resource group exists
+          if ! az group show --name "MC_${RESOURCE_GROUP_NAME}_${AKS_CLUSTER_NAME}_eastus" --query "id" -o tsv 2>/dev/null; then
+            echo "Managed resource group missing - deleting broken AKS cluster"
+            az aks delete --name ${{ vars.AKS_CLUSTER_NAME }} --resource-group ${{ vars.RESOURCE_GROUP_NAME }} --yes
+          else
+            echo "Managed resource group exists - AKS cluster is healthy"
+          fi
+        env:
+          RESOURCE_GROUP_NAME: ${{ vars.RESOURCE_GROUP_NAME }}
+          AKS_CLUSTER_NAME: ${{ vars.AKS_CLUSTER_NAME }}
+
+      - name: Remove AKS from Terraform state
+        run: |
+          # Check if AKS exists in Terraform state
+          if terraform state list | grep azurerm_kubernetes_cluster.aks; then
+            echo "Removing AKS from Terraform state"
+            terraform state rm azurerm_kubernetes_cluster.aks
+          fi
+
       - name: Terraform Init
         run: terraform init
 

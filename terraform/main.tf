@@ -76,12 +76,6 @@ resource "azurerm_kubernetes_cluster" "aks" {
     type = "SystemAssigned"
   }
 
-  lifecycle {
-    ignore_changes = [
-      default_node_pool[0].node_count,
-      # Add other properties that might be causing modification attempts
-    ]
-  }
 
   network_profile {
     network_plugin    = "azure"

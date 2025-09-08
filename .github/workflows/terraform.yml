@@ -5,16 +5,16 @@ on:
     paths:
       - 'terraform/**'
       - '.github/workflows/terraform.yml'
-  workflow_dispatch: # Allows you to run it manually from the Actions tab
+  workflow_dispatch:
 
 jobs:
   terraform:
     runs-on: ubuntu-latest
-    environment: production # Optional but good practice.
+    environment: production
     defaults:
       run:
         shell: bash
-        working-directory: ./terraform # Set working directory once for all steps
+        working-directory: ./terraform
 
     steps:
       - name: Checkout code
@@ -36,13 +36,24 @@ jobs:
       - name: Terraform Validate
         run: terraform validate
 
+      # --- NEW IMPORT STEP ---
+      - name: Import Existing Resource Group (if needed)
+        run: |
+          # Check if the resource group already exists in Azure
+          if az group show --name "${{ vars.RESOURCE_GROUP_NAME }}" --query "id" -o tsv 2>/dev/null; then
+            echo "Resource group exists. Importing it into Terraform state..."
+            terraform import azurerm_resource_group.doctor_rg /subscriptions/${{ secrets.AZURE_SUBSCRIPTION_ID }}/resourceGroups/${{ vars.RESOURCE_GROUP_NAME }}
+          else
+            echo "Resource group does not exist. It will be created by terraform apply."
+          fi
+        continue-on-error: true # This is important! If the import fails for any reason, we still want to try to plan/apply.
+
       - name: Terraform Plan
         run: terraform plan -out=tfplan
 
       - name: Terraform Apply
         run: terraform apply -auto-approve tfplan
 
-      # This step just prints the critical output for you to manually copy
       - name: Output Critical Values
         run: |
           echo "ACR Name: $(terraform output -raw acr_name)"

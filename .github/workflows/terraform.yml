@@ -7,14 +7,10 @@ on:
       - '.github/workflows/terraform.yml'
   workflow_dispatch: # Allows you to run it manually from the Actions tab
 
-# This permission is needed if you ever want to use GitHub API or CLI within the workflow
-permissions:
-  contents: read
-
 jobs:
   terraform:
     runs-on: ubuntu-latest
-    environment: production # Optional but good practice. You need to create an Environment called "production" in your repo settings for this to work.
+    environment: production # Optional but good practice.
     defaults:
       run:
         shell: bash
@@ -22,7 +18,7 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v3
 
       - name: Set up Terraform
         uses: hashicorp/setup-terraform@v2
@@ -41,20 +37,14 @@ jobs:
         run: terraform validate
 
       - name: Terraform Plan
-        run: terraform plan -out=tfplan -var="resource_group_name=${{ vars.RESOURCE_GROUP_NAME }}"
-
-      # (Optional) Upload the plan file so it can be downloaded and reviewed
-      - name: Upload Terraform Plan Artifact
-        uses: actions/upload-artifact@v3
-        with:
-          name: tfplan
-          path: terraform/tfplan
+        run: terraform plan -out=tfplan
 
       - name: Terraform Apply
         run: terraform apply -auto-approve tfplan
 
-      # NEW STEP: Show the outputs in the workflow log for easy copying
-      - name: Output Terraform Values
-        run: terraform output -raw acr_name
-        # This doesn't set secrets, it just prints them to the log.
-        # You can manually copy them from the log and add them to GitHub Secrets.
+      # This step just prints the critical output for you to manually copy
+      - name: Output Critical Values
+        run: |
+          echo "ACR Name: $(terraform output -raw acr_name)"
+          echo "AKS Name: $(terraform output -raw aks_name)"
+          echo "Resource Group: $(terraform output -raw resource_group_name)"

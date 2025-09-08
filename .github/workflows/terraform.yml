@@ -5,14 +5,20 @@ on:
     paths:
       - 'terraform/**'
       - '.github/workflows/terraform.yml'
-  workflow_dispatch:
+  workflow_dispatch: # Allows you to run it manually from the Actions tab
+
+# This permission is needed if you ever want to use GitHub API or CLI within the workflow
+permissions:
+  contents: read
 
 jobs:
   terraform:
     runs-on: ubuntu-latest
+    environment: production # Optional but good practice. You need to create an Environment called "production" in your repo settings for this to work.
     defaults:
       run:
         shell: bash
+        working-directory: ./terraform # Set working directory once for all steps
 
     steps:
       - name: Checkout code
@@ -21,7 +27,7 @@ jobs:
       - name: Set up Terraform
         uses: hashicorp/setup-terraform@v2
         with:
-          terraform_version: 1.8.5  # match your local version
+          terraform_version: 1.8.5
 
       - name: Azure Login
         uses: azure/login@v1
@@ -29,26 +35,26 @@ jobs:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
 
       - name: Terraform Init
-        working-directory: ./terraform
         run: terraform init
 
       - name: Terraform Validate
-        working-directory: ./terraform
         run: terraform validate
 
       - name: Terraform Plan
-        working-directory: ./terraform
-        run: terraform plan -out=tfplan
+        run: terraform plan -out=tfplan -var="resource_group_name=${{ vars.RESOURCE_GROUP_NAME }}"
+
+      # (Optional) Upload the plan file so it can be downloaded and reviewed
+      - name: Upload Terraform Plan Artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: tfplan
+          path: terraform/tfplan
 
       - name: Terraform Apply
-        working-directory: ./terraform
         run: terraform apply -auto-approve tfplan
 
-      - name: Export Terraform outputs to GitHub Secrets
-        run: |
-          gh secret set AZURE_REGISTRY_NAME --body "$(terraform output -raw acr_name)"
-          gh secret set AKS_CLUSTER_NAME --body "$(terraform output -raw aks_name)"
-          gh secret set AKS_RESOURCE_GROUP --body "$(terraform output -raw resource_group_name)"
-          gh secret set VNET_NAME --body "$(terraform output -raw vnet_name)"
-          gh secret set SUBNET_NAME --body "$(terraform output -raw subnet_name)"
-#small comment  
+      # NEW STEP: Show the outputs in the workflow log for easy copying
+      - name: Output Terraform Values
+        run: terraform output -raw acr_name
+        # This doesn't set secrets, it just prints them to the log.
+        # You can manually copy them from the log and add them to GitHub Secrets.

@@ -36,17 +36,27 @@ jobs:
       - name: Terraform Validate
         run: terraform validate
 
-      # --- NEW IMPORT STEP ---
-      - name: Import Existing Resource Group (if needed)
+      # --- COMPREHENSIVE IMPORT STEP ---
+      - name: Import Existing Azure Resources
         run: |
-          # Check if the resource group already exists in Azure
+          # Import Resource Group (if needed)
           if az group show --name "${{ vars.RESOURCE_GROUP_NAME }}" --query "id" -o tsv 2>/dev/null; then
-            echo "Resource group exists. Importing it into Terraform state..."
-            terraform import azurerm_resource_group.doctor_rg /subscriptions/${{ secrets.AZURE_SUBSCRIPTION_ID }}/resourceGroups/${{ vars.RESOURCE_GROUP_NAME }}
-          else
-            echo "Resource group does not exist. It will be created by terraform apply."
+            echo "Importing Resource Group..."
+            terraform import azurerm_resource_group.doctor_rg /subscriptions/${{ secrets.AZURE_SUBSCRIPTION_ID }}/resourceGroups/${{ vars.RESOURCE_GROUP_NAME }} || true
           fi
-        continue-on-error: true # This is important! If the import fails for any reason, we still want to try to plan/apply.
+
+          # Import Virtual Network (if needed)
+          if az network vnet show --name "${{ vars.VNET_NAME }}" --resource-group "${{ vars.RESOURCE_GROUP_NAME }}" --query "id" -o tsv 2>/dev/null; then
+            echo "Importing Virtual Network..."
+            terraform import azurerm_virtual_network.doctor_vnet /subscriptions/${{ secrets.AZURE_SUBSCRIPTION_ID }}/resourceGroups/${{ vars.RESOURCE_GROUP_NAME }}/providers/Microsoft.Network/virtualNetworks/${{ vars.VNET_NAME }} || true
+          fi
+
+          # Import AKS Cluster (if needed)
+          if az aks show --name "${{ vars.AKS_CLUSTER_NAME }}" --resource-group "${{ vars.RESOURCE_GROUP_NAME }}" --query "id" -o tsv 2>/dev/null; then
+            echo "Importing AKS Cluster..."
+            terraform import azurerm_kubernetes_cluster.aks /subscriptions/${{ secrets.AZURE_SUBSCRIPTION_ID }}/resourceGroups/${{ vars.RESOURCE_GROUP_NAME }}/providers/Microsoft.ContainerService/managedClusters/${{ vars.AKS_CLUSTER_NAME }} || true
+          fi
+        continue-on-error: true
 
       - name: Terraform Plan
         run: terraform plan -out=tfplan

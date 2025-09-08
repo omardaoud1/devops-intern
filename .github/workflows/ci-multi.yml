@@ -6,6 +6,16 @@ on:
     types:
       - completed
 
+
+  push:
+    paths:
+      - '.github/workflows/ci-multi.yml'
+      - 'backend/**'
+      - 'frontend/**'
+      - 'k8s/**'
+  
+  # Allow manual triggering from the UI
+  workflow_dispatch:
 jobs:
   build-backend:
     runs-on: ubuntu-latest

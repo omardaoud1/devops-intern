@@ -51,6 +51,12 @@ jobs:
             terraform import azurerm_virtual_network.doctor_vnet /subscriptions/${{ secrets.AZURE_SUBSCRIPTION_ID }}/resourceGroups/${{ vars.RESOURCE_GROUP_NAME }}/providers/Microsoft.Network/virtualNetworks/${{ vars.VNET_NAME }} || true
           fi
 
+          # Import Subnet (if needed)
+          if az network vnet subnet show --name "${{ vars.SUBNET_NAME }}" --vnet-name "${{ vars.VNET_NAME }}" --resource-group "${{ vars.RESOURCE_GROUP_NAME }}" --query "id" -o tsv 2>/dev/null; then
+            echo "Importing Subnet..."
+            terraform import azurerm_subnet.doctor_subnet /subscriptions/${{ secrets.AZURE_SUBSCRIPTION_ID }}/resourceGroups/${{ vars.RESOURCE_GROUP_NAME }}/providers/Microsoft.Network/virtualNetworks/${{ vars.VNET_NAME }}/subnets/${{ vars.SUBNET_NAME }} || true
+          fi
+
           # Import AKS Cluster (if needed)
           if az aks show --name "${{ vars.AKS_CLUSTER_NAME }}" --resource-group "${{ vars.RESOURCE_GROUP_NAME }}" --query "id" -o tsv 2>/dev/null; then
             echo "Importing AKS Cluster..."

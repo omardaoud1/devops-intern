@@ -39,11 +39,11 @@ resource "azurerm_subnet" "doctor_subnet" {
 
 
 # Grant GitHub Actions access to ACR
-resource "azurerm_role_assignment" "github_acr_push" {
-  scope                = azurerm_container_registry.doctor_acr.id
-  role_definition_name = "AcrPush"
-  principal_id         = "YOUR_PRINCIPAL_ID_HERE" # This needs to be your GitHub OIDC identity
-}
+#resource "azurerm_role_assignment" "github_acr_push" {
+# scope                = azurerm_container_registry.doctor_acr.id
+#  role_definition_name = "AcrPush"
+ # principal_id         = "YOUR_PRINCIPAL_ID_HERE" # This needs to be your GitHub OIDC identity
+#}
 # 4️⃣ Azure Container Registry (ACR)
 resource "azurerm_container_registry" "doctor_acr" {
   name                = "${var.acr_name_prefix}${random_integer.suffix.result}"
@@ -74,6 +74,13 @@ resource "azurerm_kubernetes_cluster" "aks" {
 
   identity {
     type = "SystemAssigned"
+  }
+
+  lifecycle {
+    ignore_changes = [
+      default_node_pool[0].node_count,
+      # Add other properties that might be causing modification attempts
+    ]
   }
 
   network_profile {
